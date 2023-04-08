@@ -21,19 +21,27 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weather.R;
 import com.example.weather.model.data.City;
+import com.example.weather.model.data.WeatherData;
 import com.example.weather.model.data.WeatherResponse;
 import com.example.weather.model.interfaces.ApiInterface;
 import com.example.weather.model.repo.ApiClient;
 import com.example.weather.utils.DialogUtils;
-import com.example.weather.view.adapters.SearchAdapter;
+import com.example.weather.view.adapters.CityListAdapter;
+import com.example.weather.view.adapters.SearchListAdapter;
+import com.example.weather.viewmodel.WeatherViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -51,7 +59,10 @@ public class CitySelectionActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location mUserLocation;
 
-    private SearchAdapter mSearchAdapter;
+    private SearchListAdapter mSearchListAdapter;
+    private CityListAdapter mCityListAdapter;
+
+    private WeatherViewModel mWeatherViewModel;
 
     private EditText etSearch;
     private RecyclerView rvList;
@@ -60,24 +71,59 @@ public class CitySelectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city_selection);
+        setTitle("");
 
         mActivity = this;
         mContext = this;
         mApiInterface = ApiClient.getClient().create(ApiInterface.class);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mActivity);
 
-        mSearchAdapter = new SearchAdapter();
-        mSearchAdapter.setOnItemClickListener(new SearchAdapter.OnItemClickListener() {
+        mSearchListAdapter = new SearchListAdapter();
+        mSearchListAdapter.setOnItemClickListener(new SearchListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(City city) {
+                etSearch.setText("");
+                mSearchListAdapter.submitList(new ArrayList<>());
                 getWeatherData(city.latitude, city.longitude);
+            }
+        });
+        mCityListAdapter = new CityListAdapter();
+        mCityListAdapter.setOnItemClickListener(new CityListAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(WeatherData weatherData) {
+                getWeatherData(weatherData.getWeatherResponse().coord.latitude,
+                        weatherData.getWeatherResponse().coord.longitude);
+            }
+        });
+
+        mWeatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+        mWeatherViewModel.getAllWeatherData().observe(this, new Observer<List<WeatherData>>() {
+            @Override
+            public void onChanged(List<WeatherData> weatherData) {
+                mCityListAdapter.submitList(weatherData);
+                rvList.setAdapter(mCityListAdapter);
             }
         });
 
         rvList = (RecyclerView) findViewById(R.id.rv_list);
-        rvList.setAdapter(mSearchAdapter);
+        rvList.setAdapter(mSearchListAdapter);
         rvList.setLayoutManager(new LinearLayoutManager(mContext));
         rvList.setHasFixedSize(true);
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                mWeatherViewModel.delete(mCityListAdapter.getCityAt(viewHolder.getAdapterPosition()));
+                Toast.makeText(CitySelectionActivity.this, getString(R.string.city_deleted),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }).attachToRecyclerView(rvList);
+
         etSearch = (EditText) findViewById(R.id.et_search);
         etSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -116,6 +162,9 @@ public class CitySelectionActivity extends AppCompatActivity {
             case R.id.item_settings:
                 Toast.makeText(mContext, getString(R.string.settings), Toast.LENGTH_SHORT).show();
                 return true;
+            case R.id.item_delete_all:
+                mWeatherViewModel.deleteAllWeatherData();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -150,6 +199,10 @@ public class CitySelectionActivity extends AppCompatActivity {
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 Log.d(TAG, String.valueOf(response.code()));
 
+                WeatherData weatherData = new WeatherData(Calendar.getInstance().getTimeInMillis(),
+                        response.body());
+                mWeatherViewModel.insert(weatherData);
+
                 Intent intent = new Intent(CitySelectionActivity.this, MainActivity.class);
                 intent.putExtra(MainActivity.EXTRA_WEATHER_RESPONSE, response.body());
                 startActivity(intent);
@@ -174,7 +227,8 @@ public class CitySelectionActivity extends AppCompatActivity {
             public void onResponse(Call<List<City>> call, Response<List<City>> response) {
                 Log.d(TAG, String.valueOf(response.code()));
 
-                mSearchAdapter.submitList(response.body());
+                mSearchListAdapter.submitList(response.body());
+                rvList.setAdapter(mSearchListAdapter);
 
                 DialogUtils.dismissProgressDialog();
             }

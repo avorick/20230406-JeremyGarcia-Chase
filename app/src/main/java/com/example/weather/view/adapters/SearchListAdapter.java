@@ -14,10 +14,10 @@ import com.example.weather.R;
 import com.example.weather.model.data.City;
 import com.example.weather.utils.Utils;
 
-public class SearchAdapter extends ListAdapter<City, SearchAdapter.CityHolder> {
+public class SearchListAdapter extends ListAdapter<City, SearchListAdapter.CityHolder> {
     private OnItemClickListener listener;
 
-    public SearchAdapter() {
+    public SearchListAdapter() {
         super(DIFF_CALLBACK);
     }
 
