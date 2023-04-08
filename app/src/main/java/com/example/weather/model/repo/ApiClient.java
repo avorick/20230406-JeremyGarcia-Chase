@@ -1,4 +1,6 @@
-package com.example.weather.utils;
+package com.example.weather.model.repo;
+
+import com.example.weather.utils.Utils;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -12,7 +14,7 @@ public class ApiClient {
     private static Retrofit mRetrofit = null;
 
     public static Retrofit getClient() {
-        if (mRetrofit == null) {
+        if (Utils.checkIfNull(mRetrofit)) {
             HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
             interceptor.level(HttpLoggingInterceptor.Level.BODY);
             OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();

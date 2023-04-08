@@ -1,8 +1,10 @@
-package com.example.weather.models;
+package com.example.weather.model.data;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Coord {
+import java.io.Serializable;
+
+public class Coord implements Serializable {
 
     @SerializedName("lon")
     public Double longitude;

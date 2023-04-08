@@ -1,13 +1,17 @@
-package com.example.weather.models;
+package com.example.weather.model.data;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Sys {
+import java.io.Serializable;
+
+public class Sys implements Serializable {
 
     @SerializedName("type")
     public Integer type;
     @SerializedName("id")
     public Long id;
+    @SerializedName("message")
+    public String message;
     @SerializedName("country")
     public String country;
     @SerializedName("sunrise")

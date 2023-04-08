@@ -1,8 +1,10 @@
-package com.example.weather.models;
+package com.example.weather.model.data;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Weather {
+import java.io.Serializable;
+
+public class Weather implements Serializable {
 
     @SerializedName("id")
     public Long id;

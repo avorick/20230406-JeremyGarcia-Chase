@@ -1,10 +1,11 @@
-package com.example.weather.models;
+package com.example.weather.model.data;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class WeatherResponse {
+public class WeatherResponse implements Serializable {
 
     @SerializedName("coord")
     public Coord coord;
@@ -18,10 +19,12 @@ public class WeatherResponse {
     public Integer visibility;
     @SerializedName("wind")
     public Wind wind;
-    @SerializedName("rain")
-    public Rain rain;
     @SerializedName("clouds")
     public Clouds clouds;
+    @SerializedName("rain")
+    public Rain rain;
+    @SerializedName("snow")
+    public Snow snow;
     @SerializedName("dt")
     public Long dt;
     @SerializedName("sys")
