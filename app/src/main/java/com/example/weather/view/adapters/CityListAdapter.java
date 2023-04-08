@@ -1,8 +1,10 @@
 package com.example.weather.view.adapters;
 
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,8 +12,13 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.weather.R;
 import com.example.weather.model.data.WeatherData;
+import com.example.weather.model.data.WeatherResponse;
+import com.example.weather.utils.DeviceUtils;
 import com.google.gson.Gson;
 
 public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.CityHolder> {
@@ -44,16 +51,27 @@ public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.Ci
 
     @Override
     public void onBindViewHolder(@NonNull CityHolder holder, int position) {
-        WeatherData currentCity = getItem(position);
+        WeatherResponse currentCity = getItem(position).getWeatherResponse();
         // TODO: Set unit according to SharedPreferences
 //        holder.tvUnit.setText(currentCity.getWeather().);
-        holder.tvTemp.setText(String.valueOf(currentCity.getWeatherResponse().main.temp));
-        holder.tvCity.setText(String.valueOf(currentCity.getWeatherResponse().name));
-        holder.tvSubtitle.setText(currentCity.getWeatherResponse().weathers.get(0).main);
-        holder.tvDescription.setText(currentCity.getWeatherResponse().weathers.get(0).description);
+        holder.tvTemp.setText(String.valueOf(currentCity.main.temp));
+        holder.tvCity.setText(String.valueOf(currentCity.name));
+        holder.tvSubtitle.setText(currentCity.weathers.get(0).main);
+        holder.tvDescription.setText(currentCity.weathers.get(0).description);
         holder.tvHighLow.setText(holder.itemView.getContext().getString(R.string.high_low,
-                currentCity.getWeatherResponse().main.tempMax,
-                currentCity.getWeatherResponse().main.tempMin));
+                currentCity.main.tempMax,
+                currentCity.main.tempMin));
+
+        String photoUrl = "https://openweathermap.org/img/wn/"
+                .concat(currentCity.weathers.get(0).icon)
+                .concat("@2x.png");
+        Glide.with(holder.itemView.getContext())
+                .load(Uri.parse(photoUrl))
+                .apply(new RequestOptions().override((int) (DeviceUtils.convertDpToPixels(holder.itemView.getContext(), 50)),
+                        (int) (DeviceUtils.convertDpToPixels(holder.itemView.getContext(), 50))))
+                .centerCrop()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.ivIcon);
     }
 
     public WeatherData getCityAt(int position) {
@@ -67,6 +85,7 @@ public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.Ci
         private TextView tvSubtitle;
         private TextView tvDescription;
         private TextView tvHighLow;
+        private ImageView ivIcon;
 
         public CityHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,6 +95,7 @@ public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.Ci
             tvSubtitle = itemView.findViewById(R.id.tv_subtitle);
             tvDescription = itemView.findViewById(R.id.tv_description);
             tvHighLow = itemView.findViewById(R.id.tv_high_low);
+            ivIcon = itemView.findViewById(R.id.iv_icon);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
