@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_subtitle"
             android:layout_alignTop="@id/tv_description"
-            android:layout_toEndOf="@id/tv_description"
+            android:layout_alignParentEnd="true"
             android:text="@string/high_low"
             android:textColor="@color/white"
             android:textSize="12sp" />

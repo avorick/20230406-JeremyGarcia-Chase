@@ -16,13 +16,17 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.weather.R;
+import com.example.weather.model.data.Constants;
 import com.example.weather.model.data.WeatherData;
 import com.example.weather.model.data.WeatherResponse;
 import com.example.weather.utils.DeviceUtils;
+import com.example.weather.utils.Utils;
 import com.google.gson.Gson;
 
 public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.CityHolder> {
     private OnItemClickListener listener;
+
+    private int unit;
 
     public CityListAdapter() {
         super(DIFF_CALLBACK);
@@ -52,15 +56,24 @@ public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.Ci
     @Override
     public void onBindViewHolder(@NonNull CityHolder holder, int position) {
         WeatherResponse currentCity = getItem(position).getWeatherResponse();
-        // TODO: Set unit according to SharedPreferences
-//        holder.tvUnit.setText(currentCity.getWeather().);
-        holder.tvTemp.setText(String.valueOf(currentCity.main.temp));
+
+        if (unit == Constants.CELSIUS) {
+            holder.tvUnit.setText(holder.itemView.getContext().getString(R.string.unit_celsius));
+            holder.tvTemp.setText(String.valueOf(Utils.convertKelvinToCelsius(currentCity.main.temp)));
+            holder.tvHighLow.setText(holder.itemView.getContext().getString(R.string.high_low,
+                    Utils.convertKelvinToCelsius(currentCity.main.tempMax),
+                    Utils.convertKelvinToCelsius(currentCity.main.tempMin)));
+        } else {
+            holder.tvUnit.setText(holder.itemView.getContext().getString(R.string.unit_fahrenheit));
+            holder.tvTemp.setText(String.valueOf(Utils.convertKelvinToFahrenheit(currentCity.main.temp)));
+            holder.tvHighLow.setText(holder.itemView.getContext().getString(R.string.high_low,
+                    Utils.convertKelvinToFahrenheit(currentCity.main.tempMax),
+                    Utils.convertKelvinToFahrenheit(currentCity.main.tempMin)));
+        }
+
         holder.tvCity.setText(String.valueOf(currentCity.name));
         holder.tvSubtitle.setText(currentCity.weathers.get(0).main);
         holder.tvDescription.setText(currentCity.weathers.get(0).description);
-        holder.tvHighLow.setText(holder.itemView.getContext().getString(R.string.high_low,
-                currentCity.main.tempMax,
-                currentCity.main.tempMin));
 
         String photoUrl = "https://openweathermap.org/img/wn/"
                 .concat(currentCity.weathers.get(0).icon)
@@ -115,5 +128,10 @@ public class CityListAdapter extends ListAdapter<WeatherData, CityListAdapter.Ci
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setUnit(int unit) {
+        this.unit = unit;
+        notifyDataSetChanged();
     }
 }

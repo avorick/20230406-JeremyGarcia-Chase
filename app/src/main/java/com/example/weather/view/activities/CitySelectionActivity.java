@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weather.R;
 import com.example.weather.model.data.City;
+import com.example.weather.model.data.Constants;
 import com.example.weather.model.data.WeatherData;
 import com.example.weather.model.data.WeatherResponse;
 import com.example.weather.model.interfaces.ApiInterface;
@@ -55,6 +57,7 @@ public class CitySelectionActivity extends AppCompatActivity {
 
     private Activity mActivity;
     private Context mContext;
+    private SharedPreferences mSharePreferences;
     private ApiInterface mApiInterface;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location mUserLocation;
@@ -66,6 +69,10 @@ public class CitySelectionActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private RecyclerView rvList;
+    private MenuItem miCelsius;
+    private MenuItem miFahrenheit;
+
+    private int mUnit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +82,7 @@ public class CitySelectionActivity extends AppCompatActivity {
 
         mActivity = this;
         mContext = this;
+        mSharePreferences = getSharedPreferences(Constants.SHARED_PREFS_KEY, MODE_PRIVATE);
         mApiInterface = ApiClient.getClient().create(ApiInterface.class);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mActivity);
 
@@ -135,7 +143,15 @@ public class CitySelectionActivity extends AppCompatActivity {
             }
         });
 
-        getLastLocation();
+        float lastLatitude = mSharePreferences.getFloat(Constants.SHARED_PREFS_LAST_LATITUDE, 0);
+        float lastLongitude = mSharePreferences.getFloat(Constants.SHARED_PREFS_LAST_LONGITUDE, 0);
+        if (lastLatitude != 0 && lastLongitude != 0) {
+            getWeatherData((double) lastLatitude, (double) lastLongitude);
+        } else {
+            getCurrentLocation();
+        }
+
+        setUnit(mSharePreferences.getInt(Constants.SHARED_PREFS_UNIT, Constants.FAHRENHEIT));
     }
 
     @Override
@@ -144,7 +160,7 @@ public class CitySelectionActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
+                getCurrentLocation();
             }
         }
     }
@@ -153,14 +169,36 @@ public class CitySelectionActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu_city_selection, menu);
+        miCelsius = menu.findItem(R.id.item_celsius);
+        miFahrenheit = menu.findItem(R.id.item_fahrenheit);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        switch (mUnit) {
+            case Constants.CELSIUS:
+                miCelsius.setTitle(R.string.celsius_selected);
+                miFahrenheit.setTitle(R.string.fahrenheit);
+                break;
+            case Constants.FAHRENHEIT:
+                miCelsius.setTitle(R.string.celsius);
+                miFahrenheit.setTitle(R.string.fahrenheit_selected);
+                break;
+            default:
+                break;
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.item_settings:
-                Toast.makeText(mContext, getString(R.string.settings), Toast.LENGTH_SHORT).show();
+            case R.id.item_celsius:
+                setUnit(Constants.CELSIUS);
+                return true;
+            case R.id.item_fahrenheit:
+                setUnit(Constants.FAHRENHEIT);
                 return true;
             case R.id.item_delete_all:
                 mWeatherViewModel.deleteAllWeatherData();
@@ -175,7 +213,7 @@ public class CitySelectionActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
     }
 
-    private void getLastLocation() {
+    private void getCurrentLocation() {
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
             mFusedLocationProviderClient.getLastLocation().addOnSuccessListener(mActivity,
@@ -197,7 +235,12 @@ public class CitySelectionActivity extends AppCompatActivity {
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                Log.d(TAG, String.valueOf(response.code()));
+                SharedPreferences.Editor editor = mSharePreferences.edit();
+                editor.putFloat(Constants.SHARED_PREFS_LAST_LATITUDE,
+                        response.body().coord.latitude.floatValue());
+                editor.putFloat(Constants.SHARED_PREFS_LAST_LONGITUDE,
+                        response.body().coord.longitude.floatValue());
+                editor.apply();
 
                 WeatherData weatherData = new WeatherData(Calendar.getInstance().getTimeInMillis(),
                         response.body());
@@ -239,5 +282,13 @@ public class CitySelectionActivity extends AppCompatActivity {
                 call.cancel();
             }
         });
+    }
+
+    private void setUnit(int unit) {
+        mSharePreferences.edit().putInt(Constants.SHARED_PREFS_UNIT, unit).apply();
+        mUnit = unit;
+        mCityListAdapter.setUnit(mUnit);
+
+        invalidateOptionsMenu();
     }
 }

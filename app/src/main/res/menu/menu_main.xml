@@ -9,8 +9,4 @@
         android:id="@+id/item_fahrenheit"
         android:title="@string/fahrenheit"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/item_delete_all"
-        android:title="@string/delete_all"
-        app:showAsAction="never" />
 </menu>

@@ -27,7 +27,7 @@ public interface WeatherDao {
     @Query("DELETE FROM weather_table")
     void deleteAllWeatherData();
 
-    @Query("SELECT * FROM weather_table ORDER BY addedTimestamp ASC")
+    @Query("SELECT * FROM weather_table ORDER BY addedTimestamp DESC")
     LiveData<List<WeatherData>> getAllWeatherData();
 
 }

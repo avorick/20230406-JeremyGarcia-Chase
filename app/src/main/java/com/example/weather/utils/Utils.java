@@ -56,4 +56,21 @@ public class Utils {
         return objectToCheck == null;
     }
 
+    /**
+     * Method is used to convert a Kelvin double value to a rounded Celsius integer
+     * @param kelvin The double input in Kelvin
+     * @return The converted Celsius value as a rounded integer
+     */
+    public static int convertKelvinToCelsius(double kelvin) {
+        return (int) Math.round(kelvin - 273.15);
+    }
+
+    /**
+     * Method is used to convert a Kelvin double value to a rounded Fahrenheit integer
+     * @param kelvin The double input in Kelvin
+     * @return The converted Fahrenheit value as a rounded integer
+     */
+    public static int convertKelvinToFahrenheit(double kelvin) {
+        return (int) Math.round((kelvin - 273.15) * 1.8 + 32);
+    }
 }
