@@ -135,11 +135,11 @@ public class OtherWeatherDataAdapter extends ListAdapter<OtherWeatherData, Recyc
 
                 values = currentOtherWeatherData.getValues().split(";");
                 if (isMorning) {
-                    title = SUNSET;
-                    value = SUNRISE.concat(" ").concat(Utils.convertTimeInMillisToTime(Long.parseLong(values[1])));
-                } else {
                     title = SUNRISE;
                     value = SUNSET.concat(" ").concat(Utils.convertTimeInMillisToTime(Long.parseLong(values[1])));
+                } else {
+                    title = SUNSET;
+                    value = SUNRISE.concat(" ").concat(Utils.convertTimeInMillisToTime(Long.parseLong(values[1])));
                 }
                 sunriseSunsetDataHolder.tvTile.setText(title);
                 sunriseSunsetDataHolder.tvValue.setText(Utils.convertTimeInMillisToTime(Long.parseLong(values[0])));

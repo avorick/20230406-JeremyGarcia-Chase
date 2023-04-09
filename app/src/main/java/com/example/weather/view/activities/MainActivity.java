@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
                     alOtherWeatherData.add(snow);
                 }
             }
-
             if (!Utils.checkIfNull(mWeatherResponse.sys.sunrise) ||
                     !Utils.checkIfNull(mWeatherResponse.sys.sunset)) {
                 String value = (!Utils.checkIfNull(mWeatherResponse.sys.sunrise) ?
