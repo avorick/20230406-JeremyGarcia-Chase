@@ -219,6 +219,14 @@ public class CitySelectionActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.REQUEST_CODE_UPDATE_UNIT && resultCode == RESULT_OK) {
+            setUnit(mSharePreferences.getInt(Constants.SHARED_PREFS_UNIT, Constants.FAHRENHEIT));
+        }
+    }
+
     private void askPermission() {
         ActivityCompat.requestPermissions(mActivity,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
@@ -259,7 +267,7 @@ public class CitySelectionActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(CitySelectionActivity.this, MainActivity.class);
                 intent.putExtra(MainActivity.EXTRA_WEATHER_RESPONSE, response.body());
-                startActivity(intent);
+                startActivityForResult(intent, Constants.REQUEST_CODE_UPDATE_UNIT);
 
                 DialogUtils.dismissProgressDialog();
             }

@@ -5,6 +5,7 @@ public class Constants {
     public static final String SHARED_PREFS_UNIT = "unit";
     public static final String SHARED_PREFS_LAST_LATITUDE = "lastLatitude";
     public static final String SHARED_PREFS_LAST_LONGITUDE = "lastLongitude";
+    public static final int REQUEST_CODE_UPDATE_UNIT = 1;
     public static final int CELSIUS = 0;
     public static final int FAHRENHEIT = 1;
     public static final int VIEW_TYPE_DEFAULT = 0;

@@ -205,9 +205,13 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.item_celsius:
                 setUnit(Constants.CELSIUS);
+                // tell CitySelectionActivity to update unit as well
+                setResult(RESULT_OK);
                 return true;
             case R.id.item_fahrenheit:
                 setUnit(Constants.FAHRENHEIT);
+                // tell CitySelectionActivity to update unit as well
+                setResult(RESULT_OK);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
