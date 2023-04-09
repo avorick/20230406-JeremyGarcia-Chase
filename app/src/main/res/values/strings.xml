@@ -4,6 +4,7 @@
     <!-- city selection -->
     <string name="search_hint">Search for a city</string>
     <string name="city_deleted">City Deleted</string>
+    <string name="my_location">My Location</string>
 
     <!-- main -->
     <string name="high_low">H:%d L:%d</string>

@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -41,6 +42,7 @@ import com.example.weather.view.adapters.SearchListAdapter;
 import com.example.weather.viewmodel.WeatherViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +71,7 @@ public class CitySelectionActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private RecyclerView rvList;
+    private FloatingActionButton fabMyLocation;
     private MenuItem miCelsius;
     private MenuItem miFahrenheit;
 
@@ -140,6 +143,14 @@ public class CitySelectionActivity extends AppCompatActivity {
                     getGeoData(textView.getText().toString().trim().replace(' ', '+'));
                 }
                 return true;
+            }
+        });
+
+        fabMyLocation = (FloatingActionButton) findViewById(R.id.fab_my_location);
+        fabMyLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrentLocation();
             }
         });
 
