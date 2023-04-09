@@ -7,6 +7,21 @@
 
     <!-- main -->
     <string name="high_low">H:%d L:%d</string>
+    <string name="feels_like">Feels Like</string>
+    <string name="pressure">Pressure</string>
+    <string name="humidity">Humidity</string>
+    <string name="wind_speed">Wind Speed</string>
+    <string name="direction">Direction</string>
+    <string name="gust">Gust</string>
+    <string name="clouds">Clouds</string>
+    <string name="rain">Rain</string>
+    <string name="snow">Snow</string>
+    <string name="h1">1 Hour Volume</string>
+    <string name="h3">3 Hour Volume</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="sunset">Sunset</string>
+    <string name="mps">%.2f m/s</string>
+    <string name="mph">%.2f mph</string>
 
     <!-- settings -->
     <string name="settings">Settings</string>
@@ -28,8 +43,10 @@
     <string name="unit">Unit</string>
     <string name="description">Description</string>
     <string name="other_weather_details">Other Weather Details</string>
+    <string name="title">Title</string>
     <string name="subtitle">Subtitle</string>
     <string name="search_result">City, State, Country</string>
+    <string name="value">Value</string>
 
     <!-- dialog actions -->
     <string name="action_save">Save</string>

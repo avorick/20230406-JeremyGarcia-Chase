@@ -2,6 +2,11 @@ package com.example.weather.utils;
 
 import android.os.SystemClock;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Created by jeremy on 1/30/2018.
  * Utility class used to perform null and empty string checks and other generic functions.
@@ -58,6 +63,7 @@ public class Utils {
 
     /**
      * Method is used to convert a Kelvin double value to a rounded Celsius integer
+     *
      * @param kelvin The double input in Kelvin
      * @return The converted Celsius value as a rounded integer
      */
@@ -67,10 +73,23 @@ public class Utils {
 
     /**
      * Method is used to convert a Kelvin double value to a rounded Fahrenheit integer
+     *
      * @param kelvin The double input in Kelvin
      * @return The converted Fahrenheit value as a rounded integer
      */
     public static int convertKelvinToFahrenheit(double kelvin) {
         return (int) Math.round((kelvin - 273.15) * 1.8 + 32);
+    }
+
+    /**
+     * Method is used to convert a long timestamp UTC into 12-hour time format local time
+     *
+     * @param timeInMillis The long timestamp UTC
+     * @return The converted 12-hour time String local time
+     */
+    public static String convertTimeInMillisToTime(long timeInMillis) {
+        Date date = new Date(timeInMillis);
+        Format format = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        return format.format(date);
     }
 }

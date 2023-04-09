@@ -14,16 +14,21 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.weather.R;
 import com.example.weather.model.data.Constants;
+import com.example.weather.model.data.OtherWeatherData;
 import com.example.weather.model.data.WeatherResponse;
 import com.example.weather.utils.DeviceUtils;
 import com.example.weather.utils.Utils;
-import com.google.gson.GsonBuilder;
+import com.example.weather.view.adapters.OtherWeatherDataAdapter;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -35,16 +40,19 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences mSharePreferences;
     private WeatherResponse mWeatherResponse;
 
+    private OtherWeatherDataAdapter mOtherWeatherDataAdapter;
+
     private TextView tvCity;
     private TextView tvTemp;
     private TextView tvUnit;
     private TextView tvDescription;
     private TextView tvHighLow;
-    private TextView tvResponse;
     private ImageView ivIcon;
+    private RecyclerView rvOtherWeatherData;
     private MenuItem miCelsius;
     private MenuItem miFahrenheit;
 
+    private ArrayList<OtherWeatherData> alOtherWeatherData;
     private int mUnit;
 
     @Override
@@ -57,12 +65,13 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
         mSharePreferences = getSharedPreferences(Constants.SHARED_PREFS_KEY, MODE_PRIVATE);
 
+        alOtherWeatherData = new ArrayList<>();
+
         tvCity = (TextView) findViewById(R.id.tv_city);
         tvTemp = (TextView) findViewById(R.id.tv_temp);
         tvUnit = (TextView) findViewById(R.id.tv_unit);
         tvDescription = (TextView) findViewById(R.id.tv_description);
         tvHighLow = (TextView) findViewById(R.id.tv_high_low);
-        tvResponse = (TextView) findViewById(R.id.tv_response);
         ivIcon = (ImageView) findViewById(R.id.iv_icon);
 
         Intent intent = getIntent();
@@ -74,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
                 String photoUrl = "https://openweathermap.org/img/wn/"
                         .concat(mWeatherResponse.weathers.get(0).icon)
-                        .concat("@2x.png");
+                        .concat("@4x.png");
                 Glide.with(mContext)
                         .load(Uri.parse(photoUrl))
                         .apply(new RequestOptions().override((int) (DeviceUtils.convertDpToPixels(mContext, 75)),
@@ -83,7 +92,81 @@ public class MainActivity extends AppCompatActivity {
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(ivIcon);
             }
-            tvResponse.setText(new GsonBuilder().setPrettyPrinting().create().toJson(mWeatherResponse));
+
+            // start - other weather data
+            if (!Utils.checkIfNull(mWeatherResponse.main.feelsLike)) {
+                OtherWeatherData feelsLike = new OtherWeatherData(Constants.VIEW_TYPE_DEFAULT,
+                        getString(R.string.feels_like), String.valueOf(mWeatherResponse.main.feelsLike));
+                alOtherWeatherData.add(feelsLike);
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.main.pressure)) {
+                OtherWeatherData pressure = new OtherWeatherData(Constants.VIEW_TYPE_DEFAULT,
+                        getString(R.string.pressure), String.valueOf(mWeatherResponse.main.pressure));
+                alOtherWeatherData.add(pressure);
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.main.humidity)) {
+                OtherWeatherData humidity = new OtherWeatherData(Constants.VIEW_TYPE_DEFAULT,
+                        getString(R.string.humidity), String.valueOf(mWeatherResponse.main.humidity));
+                alOtherWeatherData.add(humidity);
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.wind) &&
+                    !Utils.checkIfNull(mWeatherResponse.wind.speed) &&
+                    !Utils.checkIfNull(mWeatherResponse.wind.degree)) {
+                String value = mWeatherResponse.wind.speed + ";" +
+                        mWeatherResponse.wind.degree;
+                OtherWeatherData wind = new OtherWeatherData(Constants.VIEW_TYPE_WIND,
+                        getString(R.string.wind_speed), value);
+                alOtherWeatherData.add(wind);
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.clouds) && !Utils.checkIfNull(mWeatherResponse.clouds.all)) {
+                OtherWeatherData clouds = new OtherWeatherData(Constants.VIEW_TYPE_DEFAULT,
+                        getString(R.string.clouds), String.valueOf(mWeatherResponse.clouds.all));
+                alOtherWeatherData.add(clouds);
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.rain)) {
+                String value = (!Utils.checkIfNull(mWeatherResponse.rain.oneHour) ?
+                        mWeatherResponse.rain.oneHour + "OneHour;" : "") +
+                        (!Utils.checkIfNull(mWeatherResponse.rain.threeHour) ?
+                                mWeatherResponse.rain.threeHour : "");
+                if (!Utils.isStringEmpty(value)) {
+                    OtherWeatherData rain = new OtherWeatherData(Constants.VIEW_TYPE_RAIN_SNOW,
+                            getString(R.string.rain), value);
+                    alOtherWeatherData.add(rain);
+                }
+            }
+            if (!Utils.checkIfNull(mWeatherResponse.snow)) {
+                String value = (!Utils.checkIfNull(mWeatherResponse.snow.oneHour) ?
+                        mWeatherResponse.snow.oneHour + "OneHour;" : "") +
+                        (!Utils.checkIfNull(mWeatherResponse.snow.threeHour) ?
+                                mWeatherResponse.snow.threeHour : "");
+                if (!Utils.isStringEmpty(value)) {
+                    OtherWeatherData snow = new OtherWeatherData(Constants.VIEW_TYPE_RAIN_SNOW,
+                            getString(R.string.snow), value);
+                    alOtherWeatherData.add(snow);
+                }
+            }
+
+            if (!Utils.checkIfNull(mWeatherResponse.sys.sunrise) ||
+                    !Utils.checkIfNull(mWeatherResponse.sys.sunset)) {
+                String value = (!Utils.checkIfNull(mWeatherResponse.sys.sunrise) ?
+                        mWeatherResponse.sys.sunrise + ";" : "") +
+                        (!Utils.checkIfNull(mWeatherResponse.sys.sunset) ?
+                                mWeatherResponse.sys.sunset : "");
+                if (!Utils.isStringEmpty(value)) {
+                    OtherWeatherData sunriseSunset = new OtherWeatherData(Constants.VIEW_TYPE_SUNRISE_SUNSET,
+                            getString(R.string.sunrise), value);
+                    alOtherWeatherData.add(sunriseSunset);
+                }
+            }
+
+            mOtherWeatherDataAdapter = new OtherWeatherDataAdapter();
+            mOtherWeatherDataAdapter.submitList(alOtherWeatherData);
+
+            rvOtherWeatherData = (RecyclerView) findViewById(R.id.rv_other_weather_data);
+            rvOtherWeatherData.setAdapter(mOtherWeatherDataAdapter);
+            rvOtherWeatherData.setLayoutManager(new GridLayoutManager(mContext, 2));
+            rvOtherWeatherData.setHasFixedSize(true);
+            // end - other weather data
         } else {
             finish();
         }
@@ -134,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
     private void setUnit(int unit) {
         mSharePreferences.edit().putInt(Constants.SHARED_PREFS_UNIT, unit).apply();
         mUnit = unit;
+        mOtherWeatherDataAdapter.setUnit(mUnit);
 
         switch (unit) {
             case Constants.CELSIUS:
